@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from bdssim.ceilings import COFERInputs, TAMInputs, cofer_share_ceiling, tam_share_ceiling
+from bdssim.engine.stats import MCRun
 
 
 def _df_to_markdown(df: pd.DataFrame) -> str:
@@ -71,6 +72,101 @@ def _extract_ceiling_inputs(meta: Dict[str, Any]) -> CeilingInputs:
             tradable_supply=float(cofer_raw.get("tradable_supply", 0.0)),
         )
     return CeilingInputs(tam=tam, cofer=cofer)
+
+
+def build_mc_sections(
+    *,
+    mc: MCRun,
+    meta: Dict[str, Any],
+    ceilings_df: pd.DataFrame,
+    out_dir: Path,
+    chart_name: str = "postcap_bend_mc.png",
+) -> str:
+    years = mc.meta.get("years") or list(range(len(mc.series.get("price", []))))
+    price_series = mc.series.get("price", [])
+    if len(years) != len(price_series):
+        raise ValueError("MCRun series must align with meta years")
+
+    chart_df = pd.DataFrame({"year": years, "price": price_series})
+    switch_year_index = int(meta.get("postcap_year_index", 0))
+    chart_path = out_dir / chart_name
+    _plot_postcap_bend(chart_df, switch_year_index, chart_path)
+
+    alpha_delta = float(meta.get("alpha_postcap_delta", 0.0))
+    demand_delta = float(meta.get("demand_growth_postcap_delta", 0.0))
+    switch_sentence = (
+        f"After year {switch_year_index}, BTC is like gold - new supply is basically fixed. "
+        "We nudge the model's scarcity curve (alpha) and demand growth (g) so price can still rise as more people want it."
+    )
+
+    prior_year_return = 0.0
+    if len(price_series) >= 2 and price_series[-2] > 0:
+        prior_year_return = price_series[-1] / price_series[-2] - 1.0
+    reflexivity_p50 = mc.percentiles.get("reflexivity_delta", {}).get("p50", 0.0)
+
+    observability = [
+        f"Latest prior-year return: {prior_year_return:.1%}",
+        f"Reflexivity parked this year (p50): {reflexivity_p50:,.0f} BTC",
+    ]
+
+    table_df = ceilings_df.copy()
+    if "value" in table_df.columns:
+        table_df["value"] = table_df["value"].apply(_format_currency)
+    for col in ("p10", "p50", "p90"):
+        if col in table_df.columns:
+            table_df[col] = table_df[col].apply(_format_currency)
+    table_df = table_df.rename(columns={
+        "metric": "Metric",
+        "value": "Implied price",
+        "p10": "Model P10",
+        "p50": "Model P50",
+        "p90": "Model P90",
+    })
+    ceilings_table = _df_to_markdown(table_df)
+
+    inputs = _extract_ceiling_inputs(meta)
+    input_lines: list[str] = []
+    if inputs.tam:
+        implied = tam_share_ceiling(inputs.tam)
+        input_lines.append(
+            f"- TAM lens: {inputs.tam.btc_share:.0%} of ${inputs.tam.tam_usd/1e12:.1f}T -> {_format_currency(implied)}"
+        )
+    if inputs.cofer:
+        implied = cofer_share_ceiling(inputs.cofer)
+        input_lines.append(
+            f"- COFER lens: {inputs.cofer.reserve_share:.0%} of ${inputs.cofer.cofer_usd/1e12:.1f}T -> {_format_currency(implied)}"
+        )
+
+    lines = [
+        "# Post-Cap Monetization",
+        "",
+        switch_sentence,
+        "",
+        f"- Switch year index: {switch_year_index}",
+        f"- Delta alpha after switch: {alpha_delta:+.2f}",
+        f"- Delta g after switch: {demand_delta:+.2f}",
+        "",
+        f"![Post-Cap Bend]({chart_name})",
+        "",
+        "Key observability cues:",
+    ]
+    lines.extend(observability)
+    lines.extend([
+        "",
+        "# How High Could It Go?",
+        "",
+        "These are not forecasts - just implied prices given the inputs.",
+        "",
+        ceilings_table,
+    ])
+
+    if input_lines:
+        lines.extend(["", "Inputs used:"] + input_lines)
+
+    horizon_price = price_series[-1] if price_series else float("nan")
+    lines.extend(["", f"Model horizon price (p50): {_format_currency(mc.percentiles.get('price', {}).get('p50', horizon_price))}"])
+
+    return "\n".join(lines)
 
 
 def build_markdown_report(
@@ -169,4 +265,4 @@ def build_markdown_report(
     return report_path
 
 
-__all__ = ["build_markdown_report"]
+__all__ = ["build_markdown_report", "build_mc_sections"]

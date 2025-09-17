@@ -6,6 +6,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+import json
+
 import pandas as pd
 import streamlit as st
 
@@ -13,6 +15,7 @@ from bdssim.analysis import compute_network_centrality, summarize_cascade, yearl
 from bdssim.adoption.countries import CountryCatalog, load_countries, load_country_graph
 from bdssim.config import Config, load_config
 from bdssim.data.market_data import fetch_spot_price
+from bdssim.engine.mc import run_mc
 from bdssim.engine.simulation import SimulationEngine
 from bdssim.playbooks import Playbook, load_playbook_index, reduce_playbook
 from bdssim.ceilings import COFERInputs, TAMInputs, build_ceiling_table
@@ -21,6 +24,8 @@ DATA_ROOT = Path(__file__).resolve().parent.parent
 CONFIG_ROOT = DATA_ROOT / "configs"
 PLAYBOOK_INDEX_PATH = CONFIG_ROOT / "playbooks" / "index.yaml"
 MISSION_KEY = "bdssim_mission_state"
+MC_ARTIFACT_DIR = DATA_ROOT / "artifacts" / "mc"
+MC_ARTIFACT_PATH = MC_ARTIFACT_DIR / "dashboard_latest.json"
 
 BLOC_PRESETS = {
     "North Atlantic": ["CAN", "GBR"],
@@ -37,6 +42,28 @@ DEFAULT_CUSTOM = [
     {"name": "Phase 2", "start_day": 200, "blocs": ["Continental Europe"]},
     {"name": "Phase 3", "start_day": 400, "blocs": ["BRICS Core"]},
 ]
+
+
+def _load_latest_mc() -> Optional[dict]:
+    try:
+        with MC_ARTIFACT_PATH.open("r", encoding="utf-8") as handle:
+            data = json.load(handle)
+            if isinstance(data, dict):
+                return data
+    except FileNotFoundError:
+        return None
+    except json.JSONDecodeError:
+        return None
+    return None
+
+
+def _persist_mc(payload: dict) -> None:
+    MC_ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
+    MC_ARTIFACT_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+
+def _mc_payload(percentiles: dict, series: dict, meta: dict) -> dict:
+    return {"percentiles": percentiles, "series": series, "meta": meta}
 
 
 @lru_cache(maxsize=8)
@@ -117,20 +144,31 @@ def main() -> None:
     cfg = load_config(CONFIG_ROOT / f"{scenario_name}.yaml")
     catalog = load_catalog(cfg)
 
+    mission_state = st.session_state.setdefault(MISSION_KEY, {})
+    if "mc_artifact" not in mission_state:
+        previous = _load_latest_mc()
+        if previous:
+            mission_state["mc_artifact"] = previous
+
     playbooks, playbook_map = load_playbooks(PLAYBOOK_INDEX_PATH)
     if not playbooks:
         st.sidebar.warning("No playbooks found. Only custom staging is available.")
 
     parameter_help()
 
+    sim_mode = st.sidebar.radio("Simulation mode", ["Deterministic", "Monte Carlo"], index=0)
+    mc_draws = None
+    if sim_mode == "Monte Carlo":
+        mc_draws = st.sidebar.slider("MC draws", min_value=8, max_value=128, value=32, step=8)
+
     if st.sidebar.button("Use live BTC price"):
         try:
             live_price = fetch_spot_price()
-            st.session_state[MISSION_KEY] = {"price": live_price}
+            mission_state["price"] = live_price
             st.sidebar.success(f"Price locked at ${live_price:,.0f}")
         except Exception as exc:  # pragma: no cover - UI feedback only
             st.sidebar.error(f"Price fetch failed: {exc}")
-    price_default = st.session_state.get(MISSION_KEY, {}).get("price", cfg.market.init_price_usd)
+    price_default = mission_state.get("price", cfg.market.init_price_usd)
 
     horizon = st.sidebar.slider("Mission length (days)", 90, 3650, cfg.objective.horizon_days, 30)
     spend = st.sidebar.slider("US daily budget (USD billions)", 0.1, 5.0, cfg.policy_us.usd_per_day / 1e9, 0.1)
@@ -240,7 +278,7 @@ def main() -> None:
     col5.metric("Mark-to-market dent", f"{dent_pct*100:.2f}%")
     st.progress(min(1.0, score / 100))
 
-    tradable_supply_latest = float(timeseries["effective_float"].iloc[-1]) if "effective_float" in timeseries.columns else 10_000_000.0
+    tradable_supply_latest = float(timeseries.get("effective_float", timeseries.get("tradable_float", 10_000_000.0)).iloc[-1])
     tradable_default_m = max(min(tradable_supply_latest / 1_000_000.0, 19.0), 1.0)
 
     st.markdown("### How High Could It Go?")
@@ -257,16 +295,50 @@ def main() -> None:
     tam_inputs = TAMInputs(tam_usd=tam_trillions * 1e12, btc_share=btc_share_pct, tradable_supply=tradable_supply_m * 1e6)
     cofer_inputs = COFERInputs(cofer_usd=cofer_trillions * 1e12, reserve_share=reserve_share_pct, tradable_supply=tradable_supply_m * 1e6)
 
-    percentiles = {"p10": final_price, "p50": final_price, "p90": final_price}
-    ceiling_rows = build_ceiling_table(tam_inputs, cofer_inputs, percentiles)
-    session_meta = st.session_state.setdefault(MISSION_KEY, {})
-    session_meta["tam_inputs"] = {"tam_usd": tam_inputs.tam_usd, "btc_share": tam_inputs.btc_share, "tradable_supply": tam_inputs.tradable_supply}
-    session_meta["cofer_inputs"] = {"cofer_usd": cofer_inputs.cofer_usd, "reserve_share": cofer_inputs.reserve_share, "tradable_supply": cofer_inputs.tradable_supply}
-    session_meta["ceiling_rows"] = ceiling_rows
+    price_percentiles: Dict[str, float]
+    mc_payload = None
+    if sim_mode == "Monte Carlo":
+        years = max(1, int(round(horizon / 365)))
+        mc_config = {
+            "years": years,
+            "start_price": float(cfg.market.init_price_usd),
+            "start_effective_float": float(tradable_supply_latest),
+            "postcap_enabled": bool(tuned_cfg.postcap.enabled),
+            "postcap_year_index": int(tuned_cfg.postcap.switch_year_index),
+            "alpha_postcap_delta": float(tuned_cfg.postcap.alpha_postcap_delta),
+            "demand_growth_postcap_delta": float(tuned_cfg.postcap.demand_growth_postcap_delta),
+            "hodl_reflexivity": float(tuned_cfg.postcap.hodl_reflexivity),
+            "min_tradable_float": float(tuned_cfg.postcap.min_tradable_float),
+            "noise_vol": float(tuned_cfg.objective.residual_vol),
+        }
+        try:
+            mc_result = run_mc(mc_config, draws=mc_draws or 32, seed=tuned_cfg.objective.seed)
+            mc_payload = _mc_payload(mc_result.percentiles, mc_result.series, mc_result.meta)
+            mission_state["mc_artifact"] = mc_payload
+            _persist_mc(mc_payload)
+            price_percentiles = mc_result.percentiles.get("price", {})
+        except Exception as exc:  # pragma: no cover - UI feedback
+            st.warning(f"Monte Carlo run failed: {exc}")
+            cached = mission_state.get("mc_artifact", {})
+            price_percentiles = cached.get("percentiles", {}).get("price", {})
+    else:
+        price_percentiles = {}
 
-    focus_price = ceiling_rows[0]["value"] if ceiling_rows else 0.0
+    if not price_percentiles:
+        price_percentiles = {"p10": final_price, "p50": final_price, "p90": final_price}
+
+    ceiling_rows = build_ceiling_table(tam_inputs, cofer_inputs, price_percentiles)
+    mission_state["tam_inputs"] = {"tam_usd": tam_inputs.tam_usd, "btc_share": tam_inputs.btc_share, "tradable_supply": tam_inputs.tradable_supply}
+    mission_state["cofer_inputs"] = {"cofer_usd": cofer_inputs.cofer_usd, "reserve_share": cofer_inputs.reserve_share, "tradable_supply": cofer_inputs.tradable_supply}
+    mission_state["percentiles"] = price_percentiles
+    if mc_payload:
+        mission_state["mc_artifact"] = mc_payload
+
+    focus_price = price_percentiles.get("p50", final_price)
     st.metric("Implied Price", f"${focus_price:,.0f}")
-    st.caption(f"Model P10 / P50 / P90: ${percentiles['p10']:,.0f} / ${percentiles['p50']:,.0f} / ${percentiles['p90']:,.0f}")
+    st.caption(
+        f"Model P10 / P50 / P90: ${price_percentiles['p10']:,.0f} / ${price_percentiles['p50']:,.0f} / ${price_percentiles['p90']:,.0f}"
+    )
 
     if ceiling_rows:
         display_df = pd.DataFrame(ceiling_rows).copy()
@@ -274,6 +346,8 @@ def main() -> None:
             if col in display_df.columns:
                 display_df[col] = display_df[col].map(lambda v: f"${v:,.0f}")
         st.table(display_df)
+    else:
+        st.info("Provide TAM/COFER inputs to evaluate implied ceilings.")
     st.caption("These implied ceilings are sensitivity checks, not forecasts.")
 
 

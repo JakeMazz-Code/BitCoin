@@ -467,6 +467,9 @@ def run_years(*, config: dict) -> pd.DataFrame:
         "objective": {"horizon_days": horizon_days}
     }
 
+    if "seed" in cfg_dict:
+        overrides["objective"]["seed"] = int(cfg_dict["seed"])
+
     if "noise_vol" in cfg_dict:
         overrides["objective"]["residual_vol"] = float(cfg_dict["noise_vol"])
 

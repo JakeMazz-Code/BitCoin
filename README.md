@@ -14,6 +14,28 @@ bdssim run --config configs/base.yaml --out results/base
 
 Outputs include CSV and Parquet timeseries, summary tables, configuration snapshots, and labelled PNG plots.
 
+## Milestone 4 Quickstart
+
+1. Create a JSON config override (sample below) and run `python scripts/run_mc.py overrides.json --draws 64 --seed 7`.
+2. Inspect the printed percentile table, then open the generated artifact under `artifacts/mc/`.
+3. Launch `streamlit run bdssim/dashboard_arcade.py`, flip the sidebar mode to "Monte Carlo", and point the ceiling sliders at the implied price bands.
+4. Re-run the Milestone 4 test suite to validate the pipeline: `python -m pytest tests/test_m4_*.py`.
+
+```json
+{
+  "years": 5,
+  "start_price": 120000,
+  "start_effective_float": 1.6e7,
+  "postcap_enabled": true,
+  "postcap_year_index": 2,
+  "alpha_postcap_delta": 0.1,
+  "demand_growth_postcap_delta": 0.02,
+  "hodl_reflexivity": 0.05,
+  "min_tradable_float": 1e6,
+  "noise_vol": 0.012
+}
+```
+
 ## Modules
 
 - `bdssim.market`: square-root impact, venue mix, execution pacing, exogenous flows.
