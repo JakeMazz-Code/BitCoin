@@ -1,0 +1,63 @@
+﻿market:
+  init_price_usd: 60000
+  init_sigma: 0.045
+  adv_usd: 14000000000
+  depth_score: 0.55
+impact:
+  Y_buy: 0.72
+  Y_sell: 0.82
+  permanent_phi_buy: 0.27
+  permanent_phi_sell: 0.31
+  temp_decay_tau_days: 3.5
+  temp_decay_lambda: 1.0
+  otc_visible_fraction: 0.4
+adoption:
+  model: threshold
+  bass:
+    p: 0.01
+    q: 0.3
+    m: 20
+  threshold:
+    default_theta: 0.52
+    theta_std: 0.09
+    alpha_momentum: 0.16
+    alpha_liquidity: 0.11
+    alpha_peer: 0.28
+    policy_penalty: 0.14
+    bloc_relief:
+      relief_steps:
+        0.2: 0.04
+        0.35: 0.05
+        0.5: 0.05
+exogenous:
+  etf_flow_csv: data/flows/etf_flows_sample.csv
+  auctions_csv: null
+  stochastic_flow_bps: 4.0
+supply:
+  lost_btc: 3000000
+  miner_sell_frac: 0.34
+policy_us:
+  start_day: 0
+  usd_per_day: 1000000000
+  max_frac_adv: 0.05
+  venue_mix:
+    otc: 0.7
+    cex: 0.3
+  slippage_budget_bps: 30
+  smart_pacing: true
+  sell_rules:
+    enabled: false
+    take_profit_bands: [125000, 185000, 240000]
+    tranche_fraction: 0.2
+    time_lock_days: 30
+countries:
+  country_csv: data/countries/country_list.csv
+  graph_csv: data/countries/country_graph.csv
+  reserves_fraction_on_adopt: 0.05
+objective:
+  debt_baseline_usd: 37450000000000
+  horizon_days: 1825
+  seed: 56
+  residual_vol: 0.02
+
+

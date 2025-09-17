@@ -1,0 +1,180 @@
+﻿playbooks:
+  - key: transatlantic
+    name: Transatlantic Reinforcement
+    description: US anchors, then core NATO/EU partners, followed by energy exporters.
+    probability: 0.30
+    confidence: Medium
+    sources:
+      - NATO Innovation Fund 2024 positioning note
+    waves:
+      - name: Atlantic Launch
+        start_day: 0
+        blocs: [North Atlantic, Indo-Pacific Partners]
+        countries: [CAN, GBR, AUS]
+      - name: Continental Europe
+        start_day: 180
+        blocs: [Continental Europe]
+        countries: [DEU, FRA, ITA, ESP]
+      - name: Energy Partnership
+        start_day: 360
+        blocs: [Energy Exporters]
+        countries: [SAU, UAE, QAT]
+  - key: eastward
+    name: Eastward Domino
+    description: Pacific allies tip first, BRICS core joins once price momentum builds, then emerging Asia.
+    probability: 0.25
+    confidence: Medium
+    sources:
+      - BIS 2024 Asia-Pacific CBDC readiness survey
+    waves:
+      - name: Pacific Triangle
+        start_day: 0
+        blocs: [Indo-Pacific Partners]
+        countries: [JPN, KOR, SGP]
+      - name: BRICS Momentum
+        start_day: 150
+        blocs: [BRICS Core]
+        countries: [CHN, IND, BRA, ZAF]
+      - name: Emerging Boost
+        start_day: 320
+        blocs: [Emerging Allies]
+        countries: [MYS, IDN, THA, PHL]
+  - key: americas
+    name: Pan-American Cascade
+    description: North America leads, followed by Latin reserve holders and commodity exporters.
+    probability: 0.20
+    confidence: Low
+    sources:
+      - ECLAC digital currency adoption snapshot 2023
+    waves:
+      - name: NAFTA Core
+        start_day: 0
+        blocs: [North Atlantic, North America]
+        countries: [CAN, MEX]
+      - name: Latin Reserve Holders
+        start_day: 200
+        blocs: [Emerging Allies]
+        countries: [BRA, ARG, CHL, PER]
+      - name: Commodity Bloc
+        start_day: 380
+        blocs: [Energy Exporters]
+        countries: [SAU, NOR]
+  - key: multipolar
+    name: Multipolar Alliance
+    description: Coordinated entry of BRICS and G7 subsets to stress liquidity resilience.
+    probability: 0.25
+    confidence: Medium
+    sources:
+      - IMF Global Financial Stability Report 2024 network appendix
+    waves:
+      - name: BRICS Core
+        start_day: 0
+        blocs: [BRICS Core]
+        countries: [CHN, IND, RUS, BRA, ZAF]
+      - name: G7 Reinforcement
+        start_day: 210
+        blocs: [Continental Europe, Indo-Pacific Partners]
+        countries: [DEU, FRA, GBR, JPN]
+      - name: Strategic Partners
+        start_day: 360
+        blocs: [Emerging Allies]
+        countries: [KOR, AUS, TUR, ISR]
+  - key: conservative_wave
+    name: Conservative Sequencing
+    description: Prioritises OECD allies with established legal clarity before broader alignment.
+    probability: 0.28
+    confidence: Moderate-Low
+    assumptions: "Leans on precedent of coordinated reserve diversification (1990s ERM reforms)."
+    sources:
+      - OECD Sovereign Digital Asset Preparedness Index 2024
+      - Atlantic Council CBDC Tracker 2024
+    waves:
+      - name: G7 Anchor
+        start_day: 0
+        blocs: [North Atlantic]
+        countries: [CAN, GBR]
+        probability: 0.35
+      - name: Euro Area Core
+        start_day: 360
+        blocs: [Continental Europe]
+        countries: [DEU, FRA, ITA]
+        probability: 0.28
+      - name: Legal Pioneer Additions
+        start_day: 720
+        blocs: [Emerging Allies]
+        countries: [SGP, CHE, ISR]
+        probability: 0.22
+  - key: reference_wave
+    name: Reference Alignment
+    description: Mirrors energy-security alliances adopting staggered procurement; basis for reference scenario.
+    probability: 0.42
+    confidence: High
+    assumptions: "Combines NATO energy task-force playbooks with BIS cross-border settlement pilots."
+    sources:
+      - BIS mBridge Phase 3 briefing 2024
+      - NATO Energy Security Centre case study 2023
+    waves:
+      - name: Atlantic & Pacific Vanguard
+        start_day: 0
+        blocs: [North Atlantic, Indo-Pacific Partners]
+        countries: [CAN, GBR, JPN, AUS]
+        probability: 0.5
+      - name: Eurozone Momentum
+        start_day: 270
+        blocs: [Continental Europe]
+        countries: [DEU, FRA, ESP, ITA]
+        probability: 0.4
+      - name: Strategic Commodities
+        start_day: 540
+        blocs: [Energy Exporters]
+        countries: [SAU, NOR, ARE]
+        probability: 0.35
+      - name: Network Followers
+        start_day: 720
+        blocs: [Emerging Allies]
+        countries: [SGP, KOR, ISR, NLD]
+        probability: 0.3
+  - key: accelerated_wave
+    name: Accelerated Coalition
+    description: High-conviction adoption by BRICS plus close US allies on synchronized timelines.
+    probability: 0.30
+    confidence: Medium-High
+    assumptions: "Assumes success of cross-border settlement pilots and commodity-billing agreements."
+    sources:
+      - IMF Coordinated Digital Settlement Working Paper 2025
+      - G20 Sustainable Finance adoption brief 2024
+    waves:
+      - name: Dual-Bloc Launch
+        start_day: 0
+        blocs: [BRICS Core, North Atlantic]
+        countries: [CHN, IND, BRA, CAN, GBR]
+        probability: 0.45
+      - name: Strategic Asia Reinforcement
+        start_day: 180
+        blocs: [Indo-Pacific Partners]
+        countries: [JPN, KOR, AUS, SGP]
+        probability: 0.4
+      - name: Commodity & Tech Bridge
+        start_day: 360
+        blocs: [Energy Exporters, Emerging Allies]
+        countries: [SAU, NOR, ARE, ISR, NLD]
+        probability: 0.38
+      - name: Emerging Reserve Holders
+        start_day: 540
+        blocs: [Emerging Allies]
+        countries: [THA, PHL, MYS, IDN]
+        probability: 0.33
+  - key: stability_selldown
+    name: Stability Sell-Down
+    description: Gradual disposal plan aligned with 3% ADV ceiling starting year six.
+    probability: 0.15
+    confidence: Scenario Only
+    assumptions: "Used for debt-reduction sensitivity analysis; not an adoption wave."
+    sources:
+      - US Treasury TBAC liquidity guidance 2024
+    waves:
+      - name: Liquidity Rebalance
+        start_day: 1825
+        blocs: []
+        countries: []
+        probability: 0.0

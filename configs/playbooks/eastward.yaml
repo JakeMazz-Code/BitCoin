@@ -1,0 +1,10 @@
+playbook:
+  - name: Pacific Triangle
+    start_day: 0
+    countries: [JPN, KOR, AUS]
+  - name: ASEAN Wave
+    start_day: 150
+    countries: [IDN, MYS, PHL, THA, SGP]
+  - name: BRICS Momentum
+    start_day: 320
+    countries: [CHN, IND, BRA, ZAF]

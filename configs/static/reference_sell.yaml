@@ -1,0 +1,80 @@
+﻿meta:
+  name: reference_sell
+  description: Reference scenario with year-six stability sell-down keeping footprint under 3% ADV.
+  version: "2025.09"
+market:
+  init_price_usd: 63000
+  init_sigma: 0.032
+  adv_usd: 17000000000
+  depth_score: 0.68
+impact:
+  Y_buy: 0.68
+  Y_sell: 0.78
+  permanent_phi_buy: 0.26
+  permanent_phi_sell: 0.30
+  temp_decay_tau_days: 3.0
+  temp_decay_lambda: 1.05
+  otc_visible_fraction: 0.38
+exogenous:
+  etf_flow_csv: data/flows/etf_flows_sample.csv
+  stochastic_flow_bps: 4.0
+adoption:
+  model: bass
+  bass:
+    p: 0.012
+    q: 0.34
+    m: 22
+  threshold:
+    default_theta: 0.53
+    theta_std: 0.075
+    alpha_momentum: 0.16
+    alpha_liquidity: 0.11
+    alpha_peer: 0.27
+    policy_penalty: 0.14
+    bloc_relief:
+      relief_steps:
+        0.25: 0.05
+        0.55: 0.05
+        0.75: 0.03
+supply:
+  lost_btc: 2980000
+  miner_sell_frac: 0.34
+policy_us:
+  start_day: 0
+  usd_per_day: 1100000000
+  max_frac_adv: 0.055
+  venue_mix:
+    otc: 0.72
+    cex: 0.28
+  slippage_budget_bps: 32
+  smart_pacing: true
+  sell_rules:
+    enabled: true
+    take_profit_bands: [150000, 220000, 310000]
+    tranche_fraction: 0.18
+    time_lock_days: 15
+countries:
+  country_csv: data/countries/country_list.csv
+  graph_csv: data/countries/country_graph.csv
+  reserves_fraction_on_adopt: 0.055
+objective:
+  debt_baseline_usd: 37450000000000
+  horizon_days: 2555
+  seed: 768
+  residual_vol: 0.016
+playbook:
+  - name: Atlantic & Pacific Vanguard
+    start_day: 0
+    countries: [CAN, GBR, JPN, AUS]
+  - name: Eurozone Momentum
+    start_day: 270
+    countries: [DEU, FRA, ESP, ITA]
+  - name: Strategic Commodities
+    start_day: 540
+    countries: [SAU, NOR, ARE]
+  - name: Network Followers
+    start_day: 720
+    countries: [SGP, KOR, ISR, NLD]
+  - name: Stability Sell-Down
+    start_day: 1825
+    countries: []

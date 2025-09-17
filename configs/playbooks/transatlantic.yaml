@@ -1,0 +1,10 @@
+playbook:
+  - name: Atlantic Allies
+    start_day: 0
+    countries: [CAN, GBR, JPN]
+  - name: Europe Joins
+    start_day: 180
+    countries: [DEU, FRA, ITA, ESP]
+  - name: Energy Partners
+    start_day: 360
+    countries: [SAU, UAE, QAT]

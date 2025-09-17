@@ -1,0 +1,77 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bitcoin-debt-solution-sim"
+version = "0.1.0"
+description = "Simulation engine for Bitcoin reserve accumulation strategies and sovereign adoption contagion."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{name = "US Treasury Simulation Group", email = "policy-labs@example.com"}]
+license = {text = "MIT"}
+keywords = ["bitcoin", "simulation", "game theory", "treasury", "market impact"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial :: Accounting",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.1",
+    "scipy>=1.11",
+    "statsmodels>=0.14",
+    "networkx>=3.2",
+    "matplotlib>=3.8",
+    "pydantic>=2.6",
+    "pyyaml>=6.0",
+    "typer>=0.9",
+    "rich>=13.7",
+    "pyarrow>=14.0",
+    "streamlit>=1.37",
+    "tabulate>=0.9",
+    "markdown>=3.6",
+    "beautifulsoup4>=4.12",
+    "reportlab>=4.0",
+    "requests>=2.32",
+]
+
+[project.optional-dependencies]
+tests = [
+    "pytest>=7.4",
+    "hypothesis>=6.98",
+]
+
+dev = [
+    "black>=24.4",
+    "ruff>=0.4",
+    "pre-commit>=3.4",
+]
+
+[project.urls]
+Homepage = "https://example.com/bdssim"
+Repository = "https://example.com/bdssim/repo"
+Issues = "https://example.com/bdssim/issues"
+
+[project.scripts]
+bdssim = "bdssim.cli:app"
+
+[tool.setuptools]
+packages = ["bdssim"]
+
+[tool.setuptools.package-data]
+bdssim = ["py.typed"]
+
+[tool.black]
+target-version = ["py311"]
+line-length = 100
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I", "N", "B", "UP", "S", "W", "C90"]
+ignore = ["E203", "E501"]

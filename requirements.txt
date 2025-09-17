@@ -1,0 +1,17 @@
+numpy>=1.26
+pandas>=2.1
+scipy>=1.11
+statsmodels>=0.14
+networkx>=3.2
+matplotlib>=3.8
+pydantic>=2.6
+pyyaml>=6.0
+typer>=0.9
+rich>=13.7
+pyarrow>=14.0
+streamlit>=1.37
+tabulate>=0.9
+markdown>=3.6
+beautifulsoup4>=4.12
+reportlab>=4.0
+requests>=2.32

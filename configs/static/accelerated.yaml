@@ -1,0 +1,77 @@
+﻿meta:
+  name: accelerated
+  description: Accelerated coalition scenario combining BRICS settlement pilots with G7 digital reserve strategies.
+  version: "2025.09"
+market:
+  init_price_usd: 65000
+  init_sigma: 0.028
+  adv_usd: 19500000000
+  depth_score: 0.74
+impact:
+  Y_buy: 0.63
+  Y_sell: 0.74
+  permanent_phi_buy: 0.28
+  permanent_phi_sell: 0.27
+  temp_decay_tau_days: 2.4
+  temp_decay_lambda: 1.12
+  otc_visible_fraction: 0.33
+exogenous:
+  etf_flow_csv: data/flows/etf_flows_sample.csv
+  stochastic_flow_bps: 3.0
+adoption:
+  model: bass
+  bass:
+    p: 0.016
+    q: 0.40
+    m: 26
+  threshold:
+    default_theta: 0.48
+    theta_std: 0.065
+    alpha_momentum: 0.20
+    alpha_liquidity: 0.15
+    alpha_peer: 0.32
+    policy_penalty: 0.11
+    bloc_relief:
+      relief_steps:
+        0.2: 0.05
+        0.4: 0.05
+        0.6: 0.04
+supply:
+  lost_btc: 2850000
+  miner_sell_frac: 0.31
+policy_us:
+  start_day: 0
+  usd_per_day: 1400000000
+  max_frac_adv: 0.065
+  venue_mix:
+    otc: 0.78
+    cex: 0.22
+  slippage_budget_bps: 36
+  smart_pacing: true
+  sell_rules:
+    enabled: false
+    take_profit_bands: [135000, 215000, 300000]
+    tranche_fraction: 0.25
+    time_lock_days: 30
+countries:
+  country_csv: data/countries/country_list.csv
+  graph_csv: data/countries/country_graph.csv
+  reserves_fraction_on_adopt: 0.065
+objective:
+  debt_baseline_usd: 37450000000000
+  horizon_days: 2555
+  seed: 512
+  residual_vol: 0.014
+playbook:
+  - name: Dual-Bloc Launch
+    start_day: 0
+    countries: [CHN, IND, BRA, CAN, GBR]
+  - name: Strategic Asia Reinforcement
+    start_day: 180
+    countries: [JPN, KOR, AUS, SGP]
+  - name: Commodity & Tech Bridge
+    start_day: 360
+    countries: [SAU, NOR, ARE, ISR, NLD]
+  - name: Emerging Reserve Holders
+    start_day: 540
+    countries: [THA, PHL, MYS, IDN]

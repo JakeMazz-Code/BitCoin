@@ -1,0 +1,73 @@
+﻿meta:
+  name: conservative
+  description: Conservative adoption sequencing derived from OECD legal readiness indices.
+  version: "2025.09"
+market:
+  init_price_usd: 62000
+  init_sigma: 0.035
+  adv_usd: 14500000000
+  depth_score: 0.55
+impact:
+  Y_buy: 0.72
+  Y_sell: 0.82
+  permanent_phi_buy: 0.22
+  permanent_phi_sell: 0.32
+  temp_decay_tau_days: 3.5
+  temp_decay_lambda: 0.9
+  otc_visible_fraction: 0.42
+exogenous:
+  etf_flow_csv: data/flows/etf_flows_sample.csv
+  stochastic_flow_bps: 6.0
+adoption:
+  model: bass
+  bass:
+    p: 0.009
+    q: 0.26
+    m: 18
+  threshold:
+    default_theta: 0.58
+    theta_std: 0.09
+    alpha_momentum: 0.12
+    alpha_liquidity: 0.09
+    alpha_peer: 0.22
+    policy_penalty: 0.18
+    bloc_relief:
+      relief_steps:
+        0.3: 0.04
+        0.6: 0.05
+supply:
+  lost_btc: 3050000
+  miner_sell_frac: 0.37
+policy_us:
+  start_day: 0
+  usd_per_day: 850000000
+  max_frac_adv: 0.045
+  venue_mix:
+    otc: 0.68
+    cex: 0.32
+  slippage_budget_bps: 28
+  smart_pacing: true
+  sell_rules:
+    enabled: false
+    take_profit_bands: [125000, 185000, 240000]
+    tranche_fraction: 0.18
+    time_lock_days: 45
+countries:
+  country_csv: data/countries/country_list.csv
+  graph_csv: data/countries/country_graph.csv
+  reserves_fraction_on_adopt: 0.045
+objective:
+  debt_baseline_usd: 37450000000000
+  horizon_days: 2555
+  seed: 142
+  residual_vol: 0.018
+playbook:
+  - name: G7 Anchor
+    start_day: 0
+    countries: [CAN, GBR]
+  - name: Euro Area Core
+    start_day: 360
+    countries: [DEU, FRA, ITA]
+  - name: Legal Pioneer Additions
+    start_day: 720
+    countries: [SGP, CHE, ISR]

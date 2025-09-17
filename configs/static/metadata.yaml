@@ -1,0 +1,37 @@
+﻿scenarios:
+  conservative:
+    debt_cagr: 0.046
+    debt_source: "CBO Long-Term Budget Outlook 2024 baseline"
+    playbook_key: conservative_wave
+    summary: "OECD legal readiness suggests gradual G7 + legal pioneers adoption."
+    confidence: "Moderate-Low"
+    key_assumptions:
+      - "US/UK/Canada establish legal clarity by FY2026."
+      - "Eurozone pilot programs reach production by FY2027."
+  reference:
+    debt_cagr: 0.051
+    debt_source: "CBO Budget and Economic Outlook Jan 2024 high-debt scenario"
+    playbook_key: reference_wave
+    summary: "Aligns with NATO energy coordination and BIS settlement pilots."
+    confidence: "High"
+    key_assumptions:
+      - "Transatlantic energy security agreements include BTC settlement legs."
+      - "Commodity exporters reinvest a portion of hydrocarbon surplus."
+  accelerated:
+    debt_cagr: 0.055
+    debt_source: "IMF Fiscal Monitor October 2024 risk case"
+    playbook_key: accelerated_wave
+    summary: "BRICS and G7 convergence catalyses reserve diversification."
+    confidence: "Medium-High"
+    key_assumptions:
+      - "Cross-border CBDC rails achieve production-grade interoperability."
+      - "Commodity billing migrates 15% of trade to BTC settlement by FY2028."
+  reference_sell:
+    debt_cagr: 0.051
+    debt_source: "CBO Budget and Economic Outlook Jan 2024 high-debt scenario"
+    playbook_key: reference_wave
+    summary: "Adds phased disposals to reference path keeping market footprint under 3% ADV."
+    confidence: "High"
+    key_assumptions:
+      - "Treasury executes discretionary sells via OTC bilateral windows."
+      - "Liquidity buffers expand alongside adoption, preserving price stability."
